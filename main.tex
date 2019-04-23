@@ -91,10 +91,6 @@
 	M. Goli, J. McCall \at
 	Robert Gordon University, Aberdeen, UK. \\
 	\email{\{m.goli1, j.mccall\}@rgu.ac.uk}
-	\and
-	Kamran Idrees, Colin Glass, Mhd. Amer Wafai \at
-    High Performance Computing Centre Stuttgart (HLRS) \\ Stuttgart, Germany \\
-   \email{\{idrees, glass, wafai\}@hlrs.de}
 }
 
 \date{Received: date / Accepted: date}
@@ -123,7 +119,7 @@ Monte-Carlo tree search for deriving mappings of tasks to available hardware res
 tool support for applying the patterns and mappings in an easy and effective way.
 Using our approach, we demonstrate easily obtainable, significant and scalable speedups on a number of case studies showing speedups of up to 41 over the sequential code on a 24-core machine
 with one GPU. We also demonstrate that 
-the mappings the MCTS algorithm suggest are comparable to
+the speedups obtained by mappings derived by the MCTS algorithm are comparable to
 the best possible speedups that can be obtained. %  for the particular application.
 \keywords{Heterogeneous Parallel Computing; Monte-Carlo Tree Search; Optimisations}
 \end{abstract}
@@ -148,7 +144,8 @@ the various heterogeneous processing elements; and, \emph{iii)} provides a semi-
 introducing the chosen parallel structure into the original program, and instantiating this with the derived mapping information.
 Our technique is based on a combination of algorithmic skeletons~\cite{cole-th} for defining the parallel structure, % skeletons, 
  a method of finding a mapping for tasks on
-heterogeneous architectures\footnote{Here we use Monte Carlo Tree Search (MCTS)~\cite{mc}.}, and refactoring tool support for user-guided introduction of the skeletons and mapping decisions. 
+ heterogeneous architectures,%\footnote{Here we use Monte Carlo Tree Search (MCTS)~\cite{mc}.},
+ and refactoring tool support for user-guided introduction of the skeletons and mapping decisions. 
 
 We show the generality of our technique by using realistic 
 use-cases from three different domains (image processing, 
@@ -901,8 +898,7 @@ Image Convolution, Ant Colony
 Optimisation and Molecular Dynamics. The evaluations of the skeleton
 configurations in Step 4 are performed on a machine comprising 2x2.4Ghz 12-core 
 AMD Opteron 6176 CPUs, coupled with an NVidia Tesla C2050 graphic card
-with 448 CUDA cores running at 1.16GHz, running CentOS Linux 
- and g++ 4.1.2. The speedups reported in the figures are
+with 448 CUDA cores running at 1.16GHz, running CentOS Linux. The speedups reported in the figures are
 averages over 5 independent runs.
 
 
