@@ -1,0 +1,29 @@
+#!/usr/bin/perl
+
+for ($ngpu=10; $ngpu<11; $ngpu++) {
+  open ($fo, ">", "$ngpu-GPUS");
+  for ($ncpu=1; $ncpu<24; $ncpu++) {
+    $ratio = $ncpu / ($ncpu + $ngpu);
+    $minDiff = -1;
+    for ($k=100; $k<=950; $k += 50) {
+      $tmp = $k/10;
+      $diff = abs ($ratio*100-$tmp);
+      if ($minDiff == -1 || $diff < $minDiff) {
+        $minDiff = $diff;
+        $bestK = $k;
+      }
+    }
+    $fname = "cpu" . $bestK . ".txt";
+    open ($fh, "<", $fname);
+    while (<$fh>) {
+      @data = split("\t", $_);
+      if ($data[0] == $ncpu) {
+        print $fo "$ncpu $data[1]";
+        last;
+      }
+    }
+    close ($fh);
+  }
+  close ($fo);
+}
+

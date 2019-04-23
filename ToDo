@@ -1,0 +1,7 @@
+1. Fix the diagram. Add f and g to the boxes, make the composition structure clear in step 1. Maybe change the output of step 5 to represent the best mapping for image merging thing. (CB)
+2. Change the description of step 1, add a sentence of two about how components correspond to functions in the code, and how profiling is done. Mention that host-to-device and device-to-host communication is taken into account in profiling. (VJ)
+3. Put the cost model back in. Maybe add some description. (CB)
+4. Define throughput, deviation and stuff in MCTS model description (VJ)
+5. Explain how GPU workers are modelled. (MG)
+6. Mention how expensive each of the steps in the methodology is (VJ).
+ 
