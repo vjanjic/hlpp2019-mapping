@@ -44,6 +44,8 @@
 \usepackage{tikz}% http://ctan.org/pkg/pgf
 \usetikzlibrary{calc}
 \usepackage{amssymb,amsmath}
+\usepackage{subfigure}
+
 
 \lstset{language=C++,
 	basicstyle=\ttfamily\scriptsize, %aboveskip={-5ex},
@@ -76,9 +78,6 @@
 	Vladimir Janjic  \and 
 	M. Goli \and
 	J. McCall \and
-	K. Idrees \and
-	C. Glass \and
-	M. Wafai
 }
 
 %\authorrunning{Short form of author list} % if too long for running head
@@ -125,6 +124,50 @@ the best possible speedups that can be obtained. %  for the particular applicati
 \end{abstract}
 
 \section{Introduction}
+
+\textbf{Points to address in the final version}
+\begin{itemize}
+    \item For instance, instead of tuning the two parameters at a time, we could tune the parameters one by one using an assumption that the other parameter can be easily estimated with cheaper cost model. With this technique, the search space reduces from $n^2$ to $2n$ (let n be the number of possible values for each parameter).  The authors should compare MCTS with these simple but acceptable techniques, with experiments, at least.
+    
+    \emph{We can pull the results for hill-climbing, random sampling and exhaustive search from the other paper. Maybe re-run the programs to get all the mappings and also implement the method the reviewer proposed here}
+    
+    \item Another issue about MCTS is that there should be some adaptation of the algorithm to the proposed framework. Since MCTS is a game-search technique, the output is a single move at the root position.  However, the authors explain that whole set of parameters are obtained with MCTS.
+    
+    \emph{This should be quite straightforward. We just need to explain what the output of one run of the MCTS is a bit better.}
+    
+    \item Also, it
+is unclear which measure is used in the selection step (usually UCB1 is used to maximize the expected win ratio) and which measure is used in the propagation step (usually MCTS keeps track the win/playout counts to evaluate win ratio and UCB1 value).  These algorithmic details should be properly addressed.
+
+    \emph{Look at the CEC paper and pull out some data from there. I think this is mantioned there.}
+    
+    \item The last issue is about the evaluation of the MCTS part.  The quality of outputs depends on the number of playouts. The experiments given in the paper does not clarify this point.  Even the numbers of playouts for obtaining the experiment results are missing.
+    
+    \emph{We need to find the MCTS code for this.}
+    
+\end{itemize}
+
+%% VJ: Check this over again
+%%\subsection{To-Do List}
+%\begin{itemize}
+ %   \item The actual use of the refactoring tool is never shown; ToDo: Show a tool screenshot and code before and after the transofrmation? Or just explain the focus is not on refactoring tool...
+  %  \item The authors claim that
+%the approach is entirely generic and can be applied for different programming languages. ToDo: Clarify this. The general methodology could in principle be applied to different languages, but certain pieces of it (notably refactoring) depend on the syntax of the particular language, so they are C++ specific.
+%    \item The experiments are based on C++ and the initial examples also show C++ code but the examples
+%entirely omit the mechanics of the involved refactoring tool. There are only trivial examples
+%of how the code looks like after the skeletons already got introduced. It is not clear to the reader
+%to which degree this can be achieved automatically. ToDo: Explain that this can be done automatically.
+ %   \item It would be desirable to provide additional
+%information about the restrictions of the refactoring tool, as well as the degree to which users
+%need to manually intervene. Are there differences between programming languages or does the
+%tool work equally well for different languages? ToDo: Same as the above two points. Just play down the "completely generic" aspect a bit. 
+%    \item The advantage of applying Monte-Carlo Tree Search algorithm is not discussed.
+ %  At least we should discuss the advantages compared with genetic/evolutionary algorithms. ToDo: We can pick this up from the CEC paper.
+  % \item
+  % \item  The number of parameters is just 2 and the size of parameter space is quite small
+  % to use Monte-Carlo Tree Search. In fact, if the number of parameters is 2 it should be unnecessary to use tree search algorithms. ToDo: Put some concrete numbers on the size of search space with different number of parameters. Also, explains that we are using profiling based methods to estimate the runtime of an app, so even if the search space is small, we still need to prune it.
+  %% \item The detailed parameters in the Monte-Carlo Tree Search algorithms is missing, and thus
+  % we cannot reproduce the results for further studies. ToDO: Also pull this from the CEC paper.
+%\end{itemize}
 %CB: scheduling vs. mapping
 \noindent
 Heterogeneous multicore systems are increasingly common.
@@ -144,7 +187,7 @@ the various heterogeneous processing elements; and, \emph{iii)} provides a semi-
 introducing the chosen parallel structure into the original program, and instantiating this with the derived mapping information.
 Our technique is based on a combination of algorithmic skeletons~\cite{cole-th} for defining the parallel structure, % skeletons, 
  a method of finding a mapping for tasks on
- heterogeneous architectures,%\footnote{Here we use Monte Carlo Tree Search (MCTS)~\cite{mc}.},
+ heterogeneous architectures%\footnote{Here we use Monte Carlo Tree Search (MCTS)~\cite{mc}.},
  and refactoring tool support for user-guided introduction of the skeletons and mapping decisions. 
 
 We show the generality of our technique by using realistic 
@@ -153,9 +196,7 @@ heuristic optimisation and molecular dynamics), % showing the generality of our 
 % Our experiments on a 24-core shared-memory heterogeneous machine
 % demonstrate that we are able to automatically derive parallel versions of applications that deliver speedups that can be within
 % 5\% of the optimal speedup (over all possible parallel versions of the same application). 
-programmed using the FastFlow~\cite{AldinucciDKMT11} skeleton library for C++, which uses OpenCL and CUDA for GPU computations. The principles and techniques that we
-describe are not limited to C++ or FastFlow, however, but are \emph{completely generic}, and can easily be
-transferred to other languages and paradigms.
+programmed using the FastFlow~\cite{AldinucciDKMT11} skeleton library for C++, which uses OpenCL and CUDA for GPU computations. While some particular parts of the technology (e.g.~refactoring) necessarily depend on the syntax of C++ language, the general methodology could, in principle, be applied to other languages and paradigms (e.g.~Erlang~\cite{lapedo}).
 %
 The paper makes the following research contributions:
 % \vspace{-12pt}
@@ -180,8 +221,8 @@ The paper makes the following research contributions:
 \end{enumerate}
 
 \section{Background} \label{sec:background}
-\subsection{Skeletons} \label{sec:skeletons}
-In this paper, we take a pattern-based approach, in which the parallel application is developed
+%\subsection{Skeletons} \label{sec:skeletons}
+\paragraph{Skeletons.} In this paper, we take a pattern-based approach, in which the parallel application is developed
 by composing and/or nesting \emph{algorithmic skeletons}. An \emph{algorithmic skeleton}~\cite{cole-th} is an abstract
 computational entity that models some common pattern of computation. % parallelism (as described below).
 A skeleton is typically implemented as a higher-order function that abstracts over low-level details such as 
@@ -245,7 +286,8 @@ function $g$ with a farm whose worker function is $h$. % denoted by
 % In this paper we use the FastFlow~\cite{AldinucciDKMT11}  skeleton library for C++
 % for the implementation of these skeletons.
 
-\subsection{Refactoring}
+%\subsection{Refactoring}
+\paragraph{Refactoring}
 Refactoring is the process of changing the structure of a program
 while preserving its functional semantics in order, for example, 
 to increase code quality, programming productivity and code reuse.
@@ -258,7 +300,7 @@ only work for a very limited range of cases under limited conditions.
 Additionally, unlike simple loop parallelisation, refactoring is applicable
 to a much wider range of possible parallel structures, since the parallelism is introduced
 in a controlled way via skeletons.
-In this paper we make use of a recent refactoring extension~\cite{pdp} for Eclipse, that introduces and tunes parallelism in C++ by introducing a nesting of skeletons into the application semi-automatically by user-guidance.
+In this paper we make use of a refactoring extension~\cite{pdp} for Eclipse, that introduces and tunes parallelism in C++ by introducing a nesting of skeletons into the application semi-automatically by user-guidance.
 %\subsection{FastFlow}
 %\noindent
 %FastFlow~\cite{AldinucciDKMT11} is a skeleton-based parallel programming framework
@@ -285,6 +327,22 @@ In this paper we make use of a recent refactoring extension~\cite{pdp} for Eclip
 \end{center}
 \end{figure*}
 
+\begin{figure}
+\subfigure[Source code for image convolution before refactoring] {
+\includegraphics[width=0.42\textwidth]{figures/BeforeRefact.pdf}
+\label{fig:beforeRefact}
+\vspace{-0.8cm}
+}
+\hspace{0.05cm}
+\subfigure[Source code for image convolution after refactoring] {
+\includegraphics[width=0.44\textwidth]{figures/AfterRefact.pdf}
+\label{fig:afterRefact}
+\vspace{-0.8cm}
+}
+\caption{Application of the refactoring tool for introducing parallel patterns in the sequential code}
+\label{fig:refactoring}
+\end{figure}
+
 
 % VJ : I would remove this. I think our technology is aimed also at
 % good parallel programmers. Besides, we cannot really expect the
@@ -296,14 +354,14 @@ In this paper we make use of a recent refactoring extension~\cite{pdp} for Eclip
 \noindent
 In this section we introduce a new parallel programming technique aimed at increasing the programmability of heterogeneous 
 parallel systems.
-Our parallel programming technique aims to support both the inexperienced parallel programmer with 
+Our technique aims to support both the inexperienced parallel programmer with 
 little knowledge on parallel programming techniques; and also the experienced parallel programmer, who
 seeks to maximize productivity with the appropriate tool support to automate the process. 
 Our general technique is shown in Figure \ref{overview} and comprises a number of steps, described below.
 \begin{enumerate}
 \item \emph{Identifying initial structure.} The programmer starts with a (possibly parallel) application. The first step is to \emph{identify}
  an initial
-  skeleton structure in the code corresponding to the skeletons defined in Section~\ref{sec:skeletons}.
+  skeleton structure in the code corresponding to the skeletons defined in Section~\ref{sec:background}.
   This skeleton structure is recorded in a text file, which encapsulates the basic sequential structure of the
   algorithm, together with its basic units of computation (components) and
   tasks. Components correspond to functions of the source code. 
@@ -311,14 +369,14 @@ Our general technique is shown in Figure \ref{overview} and comprises a number o
   for which components. 
 %VJ : Is this automated?
 
-  As a simple example, consider the
-  following piece of code:
-  \begin{lstlisting}[language=C]
-  for (i=0; i<nrImages; i++) {
-    image = read_image(imageFiles[i]);
-    outImage[i] = process_image(image);
-  }
-   \end{lstlisting}
+  As a simple example, consider the piece of code in Figure~\ref{fig:beforeRefact} at lines 162---166.
+  %following piece of code:
+  %\begin{lstlisting}[language=C]
+  %for (i=0; i<nrImages; i++) {
+   % image = read_image(imageFiles[i]);
+%    outImage[i] = process_image(image);
+ % }
+ %  \end{lstlisting}
   The structure of this code is a composition of two functions,
   \lstinline|read_image| and \lstinline|process_image|, on a stream of
   input files, \lstinline|imageFiles|. Components are the
@@ -328,7 +386,7 @@ Our general technique is shown in Figure \ref{overview} and comprises a number o
   the \lstinline|read_image| function, and both CPU and GPU implementations (kernels)
   of the \lstinline|process_image| function.
   Using the notation from Section
-  \ref{sec:skeletons}, we can denote this by $r \circ p$, where $r$ is 
+  \ref{sec:background}, we can denote this by $r \circ p$, where $r$ is 
   \lstinline{read_image} function, $p$ is
   \lstinline|process_image| function, and $\circ$ is the sequential
   composition. 
@@ -359,7 +417,7 @@ Our general technique is shown in Figure \ref{overview} and comprises a number o
   equivalent skeleton configurations are automatically generated (up to a given depth of nesting)
   resulting in a number of different possible parallelisations. 
   Given an initial configuration, each composition ($\circ$) can be transformed into a parallel pipeline ($\parallel$) and
-  a farm skeleton ($\Delta$) can be introduced for any skeleton configuration. Similarly the inverse of these transformations
+  a farm skeleton ($\Delta$) can be introduced for any skeleton configuration\footnote{Since we assume that all functions operate on streams, it is always possible to replace a function with a farm skeleton operating on elements of the input stream in parallel.}. Similarly the inverse of these transformations
   can also be applied; for example, we can transform a parallel
   pipeline into a sequential composition, or eliminate a farm skeleton
   altogether. This step is computationally very cheap and fully automatic.
@@ -371,14 +429,14 @@ Our general technique is shown in Figure \ref{overview} and comprises a number o
   p$, $r \circ \Delta(p)$, $\Delta(r) \circ \Delta(p)$, $r \parallel
   p$, $\Delta(r) \parallel p$ etc. 
 \item \emph{Filtering Using Cost Model}. Using profiling information
-  obtained in step 2, the skeleton configurations are \emph{filtered} using a cost model, if desired,
+  obtained in step 2, the skeleton configurations are \emph{filtered} using a cost model
   to restrict the number of possibilities that need to be considered.
-  This allows us to eliminate possible parallelisations with little or no potential
+  This allows us to eliminate parallelisations with little or no potential
   speedup at an early stage of development.  In
   Section~\ref{sec:results}, we use a simple high-level cost model to predict
   the best possible run times for each configuration on a given hardware. At
   this stage, exact timing information is not needed, as only very
-  poor potential speedups lead to exclusion. Since we use relatively
+  poor potential speedups lead to exclusion. Since we use
   simple cost models, this step is computationally very cheap, and
   also fully automatic.
 
@@ -425,7 +483,7 @@ are the best candidates from all possible factorisations.
   $\Delta(r) \parallel \Delta(p)$, where 15 CPU workers are used for
   $\Delta(r)$ and 9 CPU and 1 GPU workers are used for
   $\Delta(p)$. 
-\item \emph{Refactoring the Application}. The programmer then \emph{chooses} one of the parallelisations together with its static mapping.
+\item \emph{Refactoring the Application}. The programmer then \emph{chooses} one of the parallelisations together with its static mapping
 and refactors the original application from Step 1, introducing the
 desired skeleton configuration from Step 5 using the \emph{refactoring} tool.
 The refactoring tool performs all the required program transformations and condition checking automatically,
@@ -433,29 +491,31 @@ introducing the skeleton structure and the parameters from Step
 4. This part is semi-automatic and computationally cheap.
 
 Considering the example code from Step 1 and the 
-skeleton configuration, $\Delta(r) \parallel \Delta(p)$, the refactoring tool may produce the following:
-  \begin{lstlisting}[language=C]
-  ff_farm<> readFarm;
-  ...
-  for(int i = 0 ; i< nworker1; i++)
-      readFarm.push_back(&read_image)
-  for(int i = 0 ; i< gpu_nworker1; i++)
-      readFarm.push_back(&read_image_gpu)
-  ff_farm<> processFarm;
-  ...
-  for(int i = 0 ; i< nworker2; i++)
-      processFarm.push_back(&read_image)
-  ff_pipeline pipe;
-  pipe.add_stage(&readFarm);
-  pipe.add_stage(&processFarm);
-  ....
-   \end{lstlisting}
+skeleton configuration, $\Delta(r) \parallel \Delta(p)$, the refactoring tool may produce the output as in Figure~\ref{fig:afterRefact},
+%
+%ollowing:
+%  \begin{lstlisting}[language=C]
+%  ff_farm<> readFarm;
+%  ...
+%  for(int i = 0 ; i< nworker1; i++)
+%      readFarm.push_back(&read_image)
+%  for(int i = 0 ; i< gpu_nworker1; i++)
+%      readFarm.push_back(&read_image_gpu)
+%  ff_farm<> processFarm;
+%  ...
+%  for(int i = 0 ; i< nworker2; i++)
+%      processFarm.push_back(&read_image)
+%  ff_pipeline pipe;
+%  pipe.add_stage(&readFarm);
+%  pipe.add_stage(&processFarm);
+%  ....
+%   \end{lstlisting}
 where the refactoring tool introduces FastFlow farm and pipeline skeletons (\lstinline{ff_farm} and \lstinline{ff_pipeline})
 including the number of CPU and GPU workers for the farm skeletons, \lstinline{readFarm} and \lstinline{processFarm}. These worker parameters are
 taken directly from the output of Stage 4. 
 \item \emph{Executing the Application}. The refactored program can then be executed on the available heterogeneous hardware, and the 
 process can be repeated if necessary. For example, if the programmer decides to port the application to a different
-architecture, or if after executing the program, the programmer discovers that an alternative configuration given at Step 5 would be better suited.
+architecture, or if the programmer discovers that an alternative configuration given at Step 5 would be better suited.
 \end{enumerate}
 %\noindent
 %% After the refactoring process, the user is then free to restart the
@@ -518,7 +578,8 @@ parameters are chosen). It proceeds by repeating the following three steps:
   to the node added in step $1$. 
 \end{enumerate}
 
-Steps 2 and 3 are repeated until a reliable statistical evaluation of step 1 is attained. Then, step 1 is repeated, adding a new value to the partial mapping.
+\noindent
+Steps 2 and 3 are repeated a fixed number of times, attaining a reliable evaluation of the partial mapping in step 1 by evaluating a fixed number of random complete mappings that correspond to it. In this way, we  avoid the exhaustive search of all complete mappings corresponding to that partial one. Then, step 1 is repeated, adding a new value to the partial mapping.
 Finally, the overall best complete mapping (a leaf of the tree) is
 selected. 
 %This branch corresponds to the static mapping that is returned by the model.
@@ -547,7 +608,7 @@ selected.
 %of resources allocated to the components of the system.
 %$SD_U$ is the standard deviation of  the utilisation of all components in the system:
 
-The evaluation function that we use to evaluate how good static
+The function that we use to evaluate how good static
 mappings are is based on the estimation of the runtime for that static
 mapping that we obtain using simulations, and the utilisation of the
 system. The function is
@@ -557,7 +618,7 @@ system. The function is
 
 $$Q(M) = S(M) - (\delta_U(M) + \delta_Q(M)),$$
 where $S(M)$ is the estimated throughput of the whole system (i.e.\
-the number of tasks per unit of time that get processed),
+the number of tasks per unit of time that get processed, obtained using profiling)
 $\delta_U(M)$ is the standard deviation of the utilisation of
 components (where the utilisation of a component is the ratio between the time the component spends
 executing tasks and the total execution time of the application) and $\delta_Q(M)$ is the standard deviation of
@@ -567,6 +628,10 @@ one task was in the queue and the total execution time) in the skeleton. Using t
 just the throughput, $S(M)$, as an evaluation function, discourages the allocating of more resources to the skeleton configuration, if
 it only results in marginally improved runtime, which may be important
 in settings where resources are paid for (e.g.\ clouds).
+
+\subsection{Adaptation of the MCTS Technique}
+
+\paragraph{Suitability of Using MCTS to Derive Static Mappings} The main target for the MCTS-based approach for deriving static mappings are computationally-heavy parallel applications that contain nested parallelism in the form of farms and pipelines. Such applications might take hours or even days to execute, so the effort required by the MCTS model to derive near-optimal mappings is well justified by savings in time and energy of the optimised parallel applications. In addition, solution space, even when the degree of nesting of skeletons is relatively small, is sufficiently large to justify the use of MCTS. For example, for the Image Convolution problem considered in Section~\ref{sec:imageConv}, with the depth of skeleton nesting of 2, the size of solution space in the hardware configurations with 16, 24 and 64 CPU cores and 1, 2 and 2 GPU cores is, respectivelly, 1240, 6624 and 129204. If each solution is evaluated using profiling, which gives the most reasonable estimation of the execution time, evaluation of the complete solutions pace would, in the latest case, take more than 400 days. So, it is well worth investing into methods to prune this search.
 
 %$SD_U = \sqrt{\frac{\Sigma_{N}(U_{w_i}-U{w_{m}})^2}{N}}$
 
@@ -903,6 +968,7 @@ averages over 5 independent runs.
 
 
 \subsection{Image Convolution}
+\label{sec:imageConv}
 \noindent
 Image convolution is a technique widely used in image processing applications such as blurring, smoothing
 or edge detection. 
@@ -961,7 +1027,7 @@ $r \circ \Delta(p)$ & 5.60 \tabularnewline
 
 Figure \ref{fig:configsConvolution}  shows all possible
 skeleton configurations for the image convolution, up to a nesting depth of two. The first column shows the skeleton configuration, using the
-notation introduced in \ref{sec:skeletons}, and the second column shows the
+notation introduced in \ref{sec:background}, and the second column shows the
 cost-estimated minimal runtime for that configuration. 
 The minimal runtime is taken over all possible combinations of workers in each skeleton farm.
 Using profiling, we obtained
@@ -1485,18 +1551,16 @@ From Figure~\ref{MD1}, we can see that the $(22,1)$ mapping gives us a speedup o
 configuration is therefore within 12\% of the best possible speedup obtained.
 
 \section{Related Work}
+
 Since the 1990s, the skeleton research community has been
 working on high-level languages and methods for parallel programming
 \cite{cole-th}.
-A rich set of skeleton rewriting rules has been proposed in \cite{FAN:PPA:01,SkillicornC95}.
-When using skeleton rewriting transformations, a set of functionally equivalent programs 
-exploiting different kinds of parallelism is obtained. Cost models and evaluation
-methodologies have also been proposed that can be used to determine the best of a set of 
-equivalent parallel programs \cite{aldinuc:stream-data:98,SkillicornC95}. 
-The technique presented in this paper extends and builds on this
+A rich set of skeleton rewriting rules, used to derive functionally equivalent programs that exploit different kinds of parallelism, has been proposed in \cite{aldinuc:stream-data:98,FAN:PPA:01,SkillicornC95}. Usually cost models are used to determine the best of a set of equivalent parallel programs.
+The technique presented in this paper builds on this
 and similar work by providing refactoring tool-support
 supplemented by a programming methodology that
 aims to make structured parallelism more accessible to a wider audience.
+
 %
 %Refactoring has a long history, with early work in the field being described by Partsch and Steinbruggen in 1983 \cite{partsch83} and Burstall
 %and Darlington in 1977~\cite{darlington77}.
@@ -1508,11 +1572,8 @@ There has so far been only a limited amount of work on refactoring for paralleli
 %here, Template-Haskell is compile-time, meaning that the programmer
 %cannot continue to develop and maintain his/her program after the
 %skeleton derivation has taken place. 
-In~\cite{hlpp}, we introduced a parallel refactoring methodology
-for Erlang programs, demonstrating a refactoring tool that introduces and tunes
-parallelism for Skeletons in Erlang. In~\cite{pdp} we presented
-a refactoring methodology, demonstrating a refactoring
-tool support approach for introducing and tuning parallelism for C++ programs.
+In~\cite{hlpp} and \cite{pdp}, we introduced a parallel refactoring methodologies
+for introducing and tuning skeletons in Erlang and C++ programs, respectivelly. 
 However, unlike the technique proposed in this paper, both of these methodologies did not support
 heterogeneous architectures, or provide support for deriving mapping information.
 %Other work on parallel refactoring
@@ -1520,8 +1581,8 @@ heterogeneous architectures, or provide support for deriving mapping information
 %Java \cite{dig}. However, these approaches are limited to concrete and fairly simple
 %structural changes (such as loop unrolling) rather than applying
 %high-level pattern-based rewrites as we have described here. 
-%
-The static mapping problem is by no means a new challenge and there is an extensive body
+
+There is an extensive body
 of work on mapping task, data and pipeline parallelism to
 parallel architectures providing static
 partitioning~\cite{kwok1999static,saraswat2007x10,subhlok1993exploiting}, using runtime scheduling~\cite{distributed1984dynamic}, heuristic-based
@@ -1537,13 +1598,14 @@ approach used in FlexStream~\cite{hormati2009flextream} framework.
 %to identify Pareto-optimal design configurations of parallel applications 
 %(incorporating code versions, resource mappings, constraints and costs).
 Despite the amount of work done in the homogeneous environment, to our best knowledge there is little work done for mapping to 
-heterogeneous (CPU/GPU) architectures. In~\cite{cec} we introduced a new mapping technique for heterogeneous multicore systems, 
+heterogeneous (CPU/GPU) architectures. In~\cite{danelutto2013}, Serban et al.~use an analytic model to devise partitioning between CPUs and GPUs of the tasks from data-parallel computations in a heterogeneous computing settings. 
+In~\cite{cec} we introduced a new mapping technique for heterogeneous multicore systems, 
 but unlike the approach here, did not provide a usable programming methodology.
 %
 Most of the work on GPUs is primarily focused on application performance 
 tuning~\cite{agrawal2005optimizing} rather than orchestration.
-In~\cite{udupa2009software} a method is provided to orchestrate the execution of heterogeneous StreamIt program presented 
-on a multi core platform equipped with an accelerator. 
+%In~\cite{udupa2009software} a method is provided to orchestrate the execution of heterogeneous StreamIt program presented 
+%on a multi core platform equipped with an accelerator. 
 %
 %They use integer
 %linear programming (ILP) formulations to perform partitioning over the combination of CPU/GPU.
@@ -1557,7 +1619,7 @@ on a multi core platform equipped with an accelerator.
 %
 %\subsection{Monte Carlo Tree Search}
 %\oindent
-Monte Carlo Tree Search have classically been applied to challenging game playing, for example the GO and Bandit 
+Monte Carlo Tree Search has classically been applied to challenging game playing, for example the GO and Bandit 
 problem~\cite{coulom2007efficient}.
 %Recently MCTS has been applied to planning and scheduling problems. In~\cite{chaslot2006montep} a MonteCarlo search algorithm has been applied 
 %to produce management problems which can be deï¬ned as single-agents selecting a sequence of actions with side effects, 
@@ -1632,32 +1694,34 @@ In this paper we establish the applicability of MCTS to the seamless orchestrati
 \noindent
 In this paper we introduced a new heterogenous parallel programming technique that employs new
 refactoring and static mapping technology, and is based on algorithmic
-skeletons. Our case studies have shown that even for an algorithm with relatively little structure, there are many different
- potential parallelisations to choose from. The technique presented here suggests promising candidates (skeletal configurations and corresponding static mappings) which are introduced
+skeletons. %Our case studies have shown that even for an algorithm with relatively little structure, there are many different
+% potential parallelisations to choose from. 
+The technique presented here suggests promising candidates (skeletal configurations and corresponding static mappings) which are introduced
 automatically via the refactoring tools.
 This allows the programmer to concentrate on 
 the correctness of the application, rather than the parallelisation. 
-Although our technique is described in terms of C++ using FastFlow, the approach taken here is,
-in fact, completely generic. The refactorings and skeletons could easily be carried over to different languages and frameworks, such 
-as Cilk, OpenMP, etc. 
-
+%Although our technique is described in terms of C++ using FastFlow, the approach taken here is,
+%in fact, completely generic. The refactorings and skeletons could easily be carried over to different languages and frameworks, such 
+%as Cilk, OpenMP, etc. 
+%
 We have used the Monte Carlo Tree Search (MCTS) algorithm to predict
 good mappings of components of a parallel program to processing
-elements of heterogenous machines, which are within 5\% - 15\% of the best speedups that are obtainable. 
-However, the method used to determine the best mapping efficiently is not limited to MCTS. Depending on the accuracy of the cost model predictions and on the dimensionality of the problem, other methods such as evolutionary algorithms will be considered in the future.  
-Obviously, in order to attain the best speedup, the programmer can perform an exhaustive search over the parameter space, as we have shown in Section~\ref{sec:results} to verify our MCTS predictions. This is compute-time intensive, but worth while if the application is to be executed frequently. 
-Our technique therefore supports tuning the invested computing time vs. the quality of the results, while the refactoring tool allows for straight-forward exploration of different skeletal configurations. It is our
+elements of heterogenous machines, which are within 5\% - 15\% of the best speedups that are obtainable. However, alternative, like exhaustive search over the parameter space, are also possible, as we have shown in Section~\ref{sec:results} to verify our MCTS predictions.
+%However, the method used to determine the best mapping efficiently is not limited to MCTS. Depending on the accuracy of the cost model predictions and on the dimensionality of the problem, other methods such as evolutionary algorithms will be considered in the future.  
+%Obviously, in order to attain the best speedup, the programmer can perform an exhaustive search over the parameter space, as we have shown in Section~\ref{sec:results} to verify our MCTS predictions. This is compute-time intensive, but worth while if the application is to be executed frequently. 
+Our technique therefore supports tuning the invested computing time vs. the quality of the results, while the refactoring tool allows for straight-forward exploration of different skeletal configurations. %It is our
  intention, in time, to develop
 a generic refactoring and mapping technique capable of using a common set of refactoring rules and skeletons.  
 
-In the near future, we expect to extend our technique to cover a wide range of parallel skeletons
-including parallel workpools, divide-and-conquer, map-reduce, bulk synchronous parallelism, and other domain-specific
+In future, we will extend our technique to cover a wide range of parallel skeletons
+including parallel workpools, divide-and-conquer, map-reduce and other domain-specific
 parallel patterns, such as parallel orbit enumerations.
-In addition, we intend to demonstrate the use of our technique on a further set of case studies, showing greater skeleton nesting and  heterogeneity. We also intend to broaden the scope of our technique to include dynamic remapping. 
-A remaining issue for further investigation is the applicability of this approach over a distributed heterogeneous architecture, where the cost of transferring data over the network is accounted for in the simulation. 
+In addition, we intend to demonstrate the use of our technique on a further set of case studies, showing greater skeleton nesting and  heterogeneity. %We also intend to broaden the scope of our technique to include dynamic remapping. 
+%A remaining issue for further investigation is the applicability of this approach over a distributed heterogeneous architecture, where the cost of transferring data over the network is accounted for in the simulation. 
 
 
-
+\section*{Acknowledgments}
+This work was supported by the EU Horizon 2020 project, TeamPlay\footnote{\url{https://www.teamplay-h2020.eu}}, grant number 779882, and UK EPSRC Discovery, grant number EP/P020631/1.
 
 % We recommend abbrvnat bibliography style.
 
@@ -1675,8 +1739,7 @@ Michael~P Allen.
 \bibitem{agrawal2005optimizing}
 S.~Agrawal, W.~Thies, and S.~Amarasinghe.
 \newblock Optimizing Stream Programs Using Linear State Space Analysis.
-\newblock In {\em Proc. of the 2005 int. con. on
-  Compilers, architectures and synthesis for embedded systems}, pp 126--136.
+\newblock In {\em Proc. CASES '05}, pp 126--136.
   ACM, 2005.
 
 \bibitem{aldinuc:stream-data:98}
@@ -1688,7 +1751,7 @@ M.~Aldinucci, M.~Coppola, and M.~Danelutto.
 \bibitem{AldinucciDKMT11}
 M.~Aldinucci, M.~Danelutto, P.~Kilpatrick, M.~Meneghin, and M.~Torquati.
 \newblock {Accelerating Code on Multi-cores with FastFlow}.
-\newblock In {\em Euro-Par}, pp 170--181, 2011.
+\newblock In {\em Proc. Euro-Par '11}, pp 170--181, 2011.
 
 \bibitem{FAN:PPA:01}
 M.~Aldinucci, S.~Gorlatch, C.~Lengauer, and S.~Pelagatti.
@@ -1700,7 +1763,7 @@ M.~Aldinucci, S.~Gorlatch, C.~Lengauer, and S.~Pelagatti.
 \bibitem{pdp}
 C.~Brown, V.~Janjic, K.~Hammond, H.~Sch\"oner, K.~Idrees and C.~Glass
 \newblock Agricultral Reform: More Efficient Farming Using Advanced Parallel Refactoring Tools.
-\newblock {\em Submitted to PDP} 2014.
+\newblock {\em Proc. PDP 2014}, Euromicro, 2014.
 
 \bibitem{hlpp}
 C.~Brown, K.~Hammond, M.~Danelutto, P.~Kilpatrick, and A.~Elliott.
@@ -1755,7 +1818,7 @@ M.~I. Gordon, W.~Thies, and S.~Amarasinghe.
 \bibitem{cec}
 M.~Goli, J.~McCall, C.~Brown, V.~Janjic and K.~Hammond
 \newblock Using Machine Learning to Derive Mappings for Heterogeneous Parallel Computations.
-\newblock {\em Proc. of IEEE Congress on Evol. Comp.} Cancun, Mexico. May. 2013. 
+\newblock {\em Proc. CEC 2013}, IEEE.
 
 \bibitem{fmcoover}
 K.~Hammond, M.~Aldinucci, C.~Brown, F.~Cesarini, M.~Danelutto,
@@ -1796,8 +1859,7 @@ K~Ramamritham.
 \bibitem{saraswat2007x10}
 V.~A. Saraswat, V.~Sarkar, and C.~von Praun.
 \newblock X10: Concurrent Programming for Modern Architectures.
-\newblock In {\em Proc. of the 12th ACM Sym. on Principles
-  and Practice of Parallel Programming}, pages 271--271. 2007.
+\newblock In {\em Proc. PPOPP '07}, pp 271--271, ACM, 2007.
 
 
 \bibitem{SkillicornC95}
@@ -1813,8 +1875,7 @@ J.~Subhlok, J.~M. Stichnoth, D.~R. O'Hallaron, and T.~Gross.
 \bibitem{udupa2009software}
 A.~Udupa, R.~Govindarajan, and M.~J. Thazhuthaveetil.
 \newblock Software Pipelined Execution of Stream Programs on GPUs.
-\newblock In {Int. Sym. \em Code Generation and Optimization.
-  I}, pp 200--209. 2009.
+\newblock In {Proc. CGO '09}, pp 200--209. 2009.
 
 \bibitem{wang2010partitioning}
 Z.~Wang and M.~F. O'Boyle.
@@ -1822,7 +1883,17 @@ Z.~Wang and M.~F. O'Boyle.
   Learning Based Approach.
 \newblock In {\em Proc. of the 19th int. con. on Parallel
   Architectures and Compilation Techniques}, pp 307--318. ACM, 2010.
+  
+  \bibitem{danelutto2013}
+  T.~Serban, M.~Danelutto, P.~Kilpatrick.
+  \newblock Autonomic Scheduling of Tasks from Data Parallel Patterns to CPU/GPU Core Mixes.
+  \newblock In {\em Proc. HPCS 2013}, pp 72--79, 2013.
 
+\bibitem{lapedo}
+ V.~Janjic, C.~Brown, K.~Hammond. 
+ \newblock Lapedo : Hybrid Skeletons for Programming Heterogeneous Multicore Machines in Erlang 
+ \newblock In {\em Parallel Computing : On the Road to Exascale . Advances in Parallel Computing} , vol. 27 , IOS Press , pp 185-195, 2015.
+ 
 \end{thebibliography}
 
 \end{document}
