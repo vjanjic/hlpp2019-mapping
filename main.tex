@@ -87,7 +87,7 @@
 	\email{\{cmb21,vj32\}@st-andrews.ac.uk}           %  \\
 	%             \emph{Present address:} of F. Author  %  if needed
 	\and
-	M. Goli, J. McCall \at
+	Mehdi Goli, John McCall \at
 	Robert Gordon University, Aberdeen, UK. \\
 	\email{\{m.goli1, j.mccall\}@rgu.ac.uk}
 }
@@ -125,26 +125,26 @@ the best possible speedups that can be obtained. %  for the particular applicati
 
 \section{Introduction}
 
-\textbf{Points to address in the final version}
-\begin{itemize}
-    \item For instance, instead of tuning the two parameters at a time, we could tune the parameters one by one using an assumption that the other parameter can be easily estimated with cheaper cost model. With this technique, the search space reduces from $n^2$ to $2n$ (let n be the number of possible values for each parameter).  The authors should compare MCTS with these simple but acceptable techniques, with experiments, at least.
+% \textbf{Points to address in the final version}
+% \begin{itemize}
+%     \item For instance, instead of tuning the two parameters at a time, we could tune the parameters one by one using an assumption that the other parameter can be easily estimated with cheaper cost model. With this technique, the search space reduces from $n^2$ to $2n$ (let n be the number of possible values for each parameter).  The authors should compare MCTS with these simple but acceptable techniques, with experiments, at least.
     
-    \emph{We can pull the results for hill-climbing, random sampling and exhaustive search from the other paper. Maybe re-run the programs to get all the mappings and also implement the method the reviewer proposed here}
+%     \emph{We can pull the results for hill-climbing, random sampling and exhaustive search from the other paper. Maybe re-run the programs to get all the mappings and also implement the method the reviewer proposed here}
     
-    \item Another issue about MCTS is that there should be some adaptation of the algorithm to the proposed framework. Since MCTS is a game-search technique, the output is a single move at the root position.  However, the authors explain that whole set of parameters are obtained with MCTS.
+%     \item Another issue about MCTS is that there should be some adaptation of the algorithm to the proposed framework. Since MCTS is a game-search technique, the output is a single move at the root position.  However, the authors explain that whole set of parameters are obtained with MCTS.
     
-    \emph{This should be quite straightforward. We just need to explain what the output of one run of the MCTS is a bit better.}
+%     \emph{This should be quite straightforward. We just need to explain what the output of one run of the MCTS is a bit better.}
     
-    \item Also, it
-is unclear which measure is used in the selection step (usually UCB1 is used to maximize the expected win ratio) and which measure is used in the propagation step (usually MCTS keeps track the win/playout counts to evaluate win ratio and UCB1 value).  These algorithmic details should be properly addressed.
+%     \item Also, it
+% is unclear which measure is used in the selection step (usually UCB1 is used to maximize the expected win ratio) and which measure is used in the propagation step (usually MCTS keeps track the win/playout counts to evaluate win ratio and UCB1 value).  These algorithmic details should be properly addressed.
 
-    \emph{Look at the CEC paper and pull out some data from there. I think this is mantioned there.}
+%     \emph{Look at the CEC paper and pull out some data from there. I think this is mantioned there.}
     
-    \item The last issue is about the evaluation of the MCTS part.  The quality of outputs depends on the number of playouts. The experiments given in the paper does not clarify this point.  Even the numbers of playouts for obtaining the experiment results are missing.
+%     \item The last issue is about the evaluation of the MCTS part.  The quality of outputs depends on the number of playouts. The experiments given in the paper does not clarify this point.  Even the numbers of playouts for obtaining the experiment results are missing.
     
-    \emph{We need to find the MCTS code for this.}
+%     \emph{We need to find the MCTS code for this.}
     
-\end{itemize}
+% \end{itemize}
 
 %% VJ: Check this over again
 %%\subsection{To-Do List}
@@ -187,7 +187,7 @@ the various heterogeneous processing elements; and, \emph{iii)} provides a semi-
 introducing the chosen parallel structure into the original program, and instantiating this with the derived mapping information.
 Our technique is based on a combination of algorithmic skeletons~\cite{cole-th} for defining the parallel structure, % skeletons, 
  a method of finding a mapping for tasks on
- heterogeneous architectures%\footnote{Here we use Monte Carlo Tree Search (MCTS)~\cite{mc}.},
+ heterogeneous architectures %\footnote{Here we use Monte Carlo Tree Search (MCTS)~\cite{mc}.},
  and refactoring tool support for user-guided introduction of the skeletons and mapping decisions. 
 
 We show the generality of our technique by using realistic 
@@ -555,11 +555,13 @@ GPU versions, if the GPU version of a component is available). As an
 output, it produces a candidate static mapping  and the corresponding estimated runtime of the skeletal
 configuration. Since considering all possible static mappings for a given
 skeletal configuration may be computationally intractable, an optimisation method is used. Here, we use the Monte Carlo Tree Search (MCTS) approach, well known for generating and
-evaluating large game trees in Game theory. In our case,   the nodes of the
-generated tree correspond to partial mappings (with some of the
-skeleton parameters chosen) and the leaves of the tree correspond to
-complete mappings. The children of a node represent different possible
-assignments of a yet unassigned skeleton parameter.
+evaluating large game trees in Game theory. In our case,  the nodes of the
+generated tree correspond to estimated near-optimal mappings (with some of the
+skeleton parameters fixed) and the leaves of the tree correspond to
+complete mappings. The root of the tree corresponds for the
+near-optimal mapping of the whole skeleton configuration (with none of
+the parameters fixed). The children of a node represent different
+possibilities for fixing a yet unfixed skeleton parameter.
 
 The MCTS approach starts from a tree that consists only of a
 single 
@@ -634,12 +636,17 @@ in settings where resources are paid for (e.g.\ clouds).
 
 \noindent It is well known that the MCTS techinque is most often used
 to find a single best move at the root of the game tree. In our
-adaptation of the technique to the static mapping problem, the best
+adaptation of this technique to the static mapping problem, nodes of
+the game tree correspond to fixing of the parameters of the
+skeleton configuration. The best
 move at the root of the tree represent assignments of all the
-parameters to all the components of the application. \textbf{ToDo: }
-\emph{This needs to be thought over, because in the text above, we say the
-opposite - that the root of the tree represents the mapping where no
-parameters have been assigned.}
+parameters to all the components of the application. This move is
+computed by considering all the children of the tree, which correspond
+to moves where we fix the first parameter of the configuration
+(i.e.~we allocate one type of resources, CPUs or GPUs, to one of the
+skeleton components) and the others are chosen freely. Grandchildren
+of the root represent moves where we fix the first two parameters and
+freely chose the others and so on.  
 
 \noindent
 \paragraph{Suitability of Using MCTS to Derive Static Mappings} The
@@ -649,7 +656,7 @@ parallelism in the form of farms and pipelines. Such applications
 might take hours or even days to execute and may need to be executed
 repeatedly, so the effort required by the MCTS model to derive
 near-optimal mappings is well justified by savings in time and energy
-of the optimised parallel applications. In addition, solution space,
+of the optimised parallel applications. In addition, the solution space,
 even when the degree of nesting of skeletons is relatively small, is
 sufficiently large to justify the use of MCTS. For example, for the
 Image Convolution problem considered in Section~\ref{sec:imageConv},
@@ -697,7 +704,7 @@ maximal reward of all the children is propagated to their parent, and
 the \emph{Average} policy, where the average reward of all the
 children is propagated to their parent. The experiments showed that
 the \emph{Average} policy works better, being less greedy. For more
-details, see~\cite{cec2013}.
+details, see~\cite{cec}.
 
 
 
@@ -1391,7 +1398,7 @@ prediction given by MCTS (Figure~\ref{fig:predicts}).
 \noindent
 Ant Colony Optimisation (ACO)~\cite{aco} is a heuristic for solving NP-complete
 optimisation problems, inspired by the behaviour of real ants. In this paper, we apply ACO to the 
-Single Machine Total Weighted Tardiness Problem (SMTWTP) optimisation
+Single Machine Total Weighted Tardiness (SMTWTP) optimisation
 problem, where we are given $n$ jobs
 and each job, $i$, is characterised by its processing time, $p_i$,
 deadline, $d_i$,  and weight, $w_i$. The goal is to schedule the execution
@@ -1640,7 +1647,7 @@ There has so far been only a limited amount of work on refactoring for paralleli
 %here, Template-Haskell is compile-time, meaning that the programmer
 %cannot continue to develop and maintain his/her program after the
 %skeleton derivation has taken place. 
-In~\cite{hlpp} and \cite{pdp}, we introduced a parallel refactoring methodologies
+In~\cite{hlpp} and \cite{pdp}, we introduced a parallel refactoring methodology
 for introducing and tuning skeletons in Erlang and C++ programs, respectivelly. 
 However, unlike the technique proposed in this paper, both of these methodologies did not support
 heterogeneous architectures, or provide support for deriving mapping information.
@@ -1781,7 +1788,7 @@ Our technique therefore supports tuning the invested computing time vs. the qual
  intention, in time, to develop
 a generic refactoring and mapping technique capable of using a common set of refactoring rules and skeletons.  
 
-In future, we will extend our technique to cover a wide range of parallel skeletons
+In the future, we will extend our technique to cover a wide range of parallel skeletons
 including parallel workpools, divide-and-conquer, map-reduce and other domain-specific
 parallel patterns, such as parallel orbit enumerations.
 In addition, we intend to demonstrate the use of our technique on a further set of case studies, showing greater skeleton nesting and  heterogeneity. %We also intend to broaden the scope of our technique to include dynamic remapping. 
@@ -1855,7 +1862,7 @@ R.~M. Burstall and J.~Darlington.
 \newblock {\em J. of the ACM}, 24(1):44--67, 1977.
 
 \bibitem{chaslot2006montep}
-G.~Chaslot, S.~De~Jong, J.-T. Saito, and J.~Uiterwijk, Monte-carlo Tree
+G.~Chaslot, S.~De~Jong, J.-T. Saito, and J.~Uiterwijk, Monte-Carlo Tree
  Search in Production Management Problems, in \emph{Proceedings of the 18th
  BeNeLux Conference on Artificial Intelligence}, 2006, pp. 91--98.
  
@@ -1960,9 +1967,16 @@ Z.~Wang and M.~F. O'Boyle.
 \bibitem{lapedo}
  V.~Janjic, C.~Brown, K.~Hammond. 
  \newblock Lapedo : Hybrid Skeletons for Programming Heterogeneous Multicore Machines in Erlang 
- \newblock In {\em Parallel Computing : On the Road to Exascale . Advances in Parallel Computing} , vol. 27 , IOS Press , pp 185-195, 2015.
+ \newblock In {\em Parallel Computing : On the Road to Exascale
+   . Advances in Parallel Computing} , vol. 27 , IOS Press , pp
+ 185-195, 2015.
+
+\bibitem{kocsis2006improved}
+  L.~Kocsis, C.~Szepesv{\'a}ri and J.~Willemson.
+  \newblock Improved Monte-Carlo Search
+  \newblock {\em Univ. Tartu, Estonia, Tech. Rep}, 2006.
+
  
 \end{thebibliography}
 
 \end{document}
-
