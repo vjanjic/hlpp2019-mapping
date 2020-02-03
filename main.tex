@@ -241,11 +241,21 @@ $f1 \circ f2$ denotes a sequential composition of two functions, $f1$ and $f2$.
  functions on a sequence of inputs, where the execution of the first function needs to be
  completed for all input values before the execution of the second one
  can start. $f ; g$, therefore, requires synchronisation
- between $f$ and $g$.
+ between $f$ and $g$. This skeleton can be used, for example, in the
+ map-reduce like computations, such as the one described in
+ Section~\ref{sec:aco}, to synchronise between the map and reduce phase.
 \end{itemize}
 
 We also consider two widely-used parallel skeletons:
 \begin{itemize}
+\item A \emph{Farm ($\Delta$)} skeleton,  $\Delta(\mathit{nwCPU},\mathit{nwGPU},f,x)$, represents the application of a single function,
+  $f$, to the sequence of independent inputs,\\ 
+  $x_1,x_2,x_3,\dots,x_n$, in parallel. In the farm implementation
+  that we consider, a specific number of
+  \emph{worker threads} is created, and the inputs are assigned to
+  these worker threads in a round-robin fashion.  
+ Here \emph{nwCPU}/\emph{nwGPU} are, respectively, the number of worker
+ threads executed on CPUs/GPUs.
 \item The \emph{Pipeline ($\parallel$)} skeleton applies
     the composition
     of the functions \\ $f_1, f_2, \dots, f_n$, \emph{in parallel} to a sequence of independent inputs
@@ -256,15 +266,12 @@ We also consider two widely-used parallel skeletons:
    consider, a separate thread is assigned to each
    \emph{pipeline stage} (function $f_i$).
    We denote the pipeline skeleton by
-    $(f_1 \parallel f_2 \parallel \dots \parallel f_n)(x) $.
-\item A \emph{Farm ($\Delta$)} skeleton,  $\Delta(\mathit{nwCPU},\mathit{nwGPU},f,x)$, represents the application of a single function,
-  $f$, to the sequence of independent inputs,\\ 
-  $x_1,x_2,x_3,\dots,x_n$, in parallel. In the farm implementation
-  that we consider, a specific number of
-  \emph{worker threads} is created, and the inputs are assigned to
-  these worker threads in a round-robin fashion.  
- Here \emph{nwCPU}/\emph{nwGPU} are, respectively, the number of worker
-  threads executed on CPUs/GPUs.
+    $(f_1 \parallel f_2 \parallel \dots \parallel f_n)(x) $. Note that
+    the pipeline skeleton does not accept the number of workers as an
+    input, because a pipeline stage is always executed in one
+    thread. If we want multiple threads to execute a single pipeline
+    stage, to parallelise processing of items from its inputs, we
+    compose it with the farm skeleton.
 \end{itemize}
 
 \noindent
@@ -401,7 +408,9 @@ Our general technique is shown in Figure \ref{overview} and comprises a number o
   profiling of the components. That is, we run each available version (CPU or
   GPU) of each component on a sample of input tasks in order to determine
   the average time it takes for each component to process one input
-  task. This timing information is used in subsequent  steps of our
+  task. In the case of the GPU computation, this also includes the
+  time it takes to transfer the data to/from the GPU.
+  This timing information is used in subsequent  steps of our
   methdology. This step is carried out manually by the programmer, and
   its time complexity depends on the runtime of components for the
   sampled inputs.
@@ -626,7 +635,12 @@ components (where the utilisation of a component is the ratio between the time t
 executing tasks and the total execution time of the application) and $\delta_Q(M)$ is the standard deviation of
 the utilisation of the connecting queues between the components (where
 the utilisation of a queue is the ratio between the time where at least
-one task was in the queue and the total execution time) in the skeleton. Using this function, $Q(M)$, rather than using
+one task was in the queue and the total execution time) in the
+skeleton. In this way, if two mappings have a similar throughput, the
+one which has smaller deviation from the standard utilisation of the
+resources (and
+which, hence, uses resouces more uniformly) will be preferred.
+Using this function, $Q(M)$, rather than using
 just the throughput, $S(M)$, as an evaluation function, discourages the allocating of more resources to the skeleton configuration, if
 it only results in marginally improved runtime, which may be important
 in settings where resources are paid for (e.g.\ clouds).
@@ -1395,6 +1409,7 @@ prediction given by MCTS (Figure~\ref{fig:predicts}).
 
 
 \subsection{Ant Colony Optimisation}
+\label{sec:aco}
 \noindent
 Ant Colony Optimisation (ACO)~\cite{aco} is a heuristic for solving NP-complete
 optimisation problems, inspired by the behaviour of real ants. In this paper, we apply ACO to the 
