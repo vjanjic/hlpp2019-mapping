@@ -629,9 +629,77 @@ just the throughput, $S(M)$, as an evaluation function, discourages the allocati
 it only results in marginally improved runtime, which may be important
 in settings where resources are paid for (e.g.\ clouds).
 
-\subsection{Adaptation of the MCTS Technique}
+\subsection{Adaptation of the MCTS Technique to the Static Mapping
+  Problem}
 
-\paragraph{Suitability of Using MCTS to Derive Static Mappings} The main target for the MCTS-based approach for deriving static mappings are computationally-heavy parallel applications that contain nested parallelism in the form of farms and pipelines. Such applications might take hours or even days to execute, so the effort required by the MCTS model to derive near-optimal mappings is well justified by savings in time and energy of the optimised parallel applications. In addition, solution space, even when the degree of nesting of skeletons is relatively small, is sufficiently large to justify the use of MCTS. For example, for the Image Convolution problem considered in Section~\ref{sec:imageConv}, with the depth of skeleton nesting of 2, the size of solution space in the hardware configurations with 16, 24 and 64 CPU cores and 1, 2 and 2 GPU cores is, respectivelly, 1240, 6624 and 129204. If each solution is evaluated using profiling, which gives the most reasonable estimation of the execution time, evaluation of the complete solutions pace would, in the latest case, take more than 400 days. So, it is well worth investing into methods to prune this search.
+\noindent It is well known that the MCTS techinque is most often used
+to find a single best move at the root of the game tree. In our
+adaptation of the technique to the static mapping problem, the best
+move at the root of the tree represent assignments of all the
+parameters to all the components of the application. \textbf{ToDo: }
+\emph{This needs to be thought over, because in the text above, we say the
+opposite - that the root of the tree represents the mapping where no
+parameters have been assigned.}
+
+\noindent
+\paragraph{Suitability of Using MCTS to Derive Static Mappings} The
+main target for the MCTS-based approach for deriving static mappings
+are computationally-heavy parallel applications that contain nested
+parallelism in the form of farms and pipelines. Such applications
+might take hours or even days to execute and may need to be executed
+repeatedly, so the effort required by the MCTS model to derive
+near-optimal mappings is well justified by savings in time and energy
+of the optimised parallel applications. In addition, solution space,
+even when the degree of nesting of skeletons is relatively small, is
+sufficiently large to justify the use of MCTS. For example, for the
+Image Convolution problem considered in Section~\ref{sec:imageConv},
+with the depth of skeleton nesting of 2, the Table~\ref{tab:conv}
+gives an example sizes of solution space for different hardware
+configurations and the estimated time needed to evaluate all of them
+using full profiling (which is the only way to give the accurate
+estimation of the execution time). From the table, we can see that for
+even modestly-sized parallel systems, the time to evaluate all
+parameters would be hundreds of days order of magnitude. Since
+parallel systems are becoming larger and larger, with more CPU cores
+and more GPU devices being available in a single shared-memory system,
+the problem will only become more time-consuming.
+
+\begin{table}
+  \begin{tabular}{|c|c|c|c|c|}
+    \hline \hline
+    \textbf{CPU Cores} & \textbf{GPUs} & \textbf{App Components} &
+    \textbf{Sol. Size} & \textbf{Time for Eval.} \\
+    \hline
+    16 & 1 & 4 & 1240 & $>$86400s \\ \hline
+    24 & 2 & 4 &6624 & $>$604800s \\ \hline
+    64 & 2 & 4 & 129204 & $>$36288000s \\
+    \hline \hline
+  \end{tabular}
+  \caption{Solution space and time needed for its full evaluation for
+  Image Convolution on different hardware configurations.}
+  \label{tab:conv}
+\end{table}
+
+\paragraph{MCTS Parameters} The selection strategy that we use is the \emph{Upper Confidence bounds applied to Trees} (UCT)~\cite{kocsis2006improved}.
+The formula for UCT is
+
+$$UCT= \overline{X_j} + 2C_P\sqrt{\frac{2\ln n}{n_j}},$$
+
+\noindent
+where $n$ is the number of times the current node has been visited; $n_j$ is the number of times the child, $j$, has been visited;
+$C_P>0$ is a constant value; and, $\overline{X_j}$ is the average
+reward value given to child node, $j$. The experiments showed that the
+value of around 1/5th of the average throughput for $C_P$ gives the
+best results, being a good tradeoff between reducing the search space
+and making sure we do not get stuck in the local optimum. As for the back-propagation
+policy, we considered two policies - \emph{Max} policy, where the
+maximal reward of all the children is propagated to their parent, and
+the \emph{Average} policy, where the average reward of all the
+children is propagated to their parent. The experiments showed that
+the \emph{Average} policy works better, being less greedy. For more
+details, see~\cite{cec2013}.
+
+
 
 %$SD_U = \sqrt{\frac{\Sigma_{N}(U_{w_i}-U{w_{m}})^2}{N}}$
 
